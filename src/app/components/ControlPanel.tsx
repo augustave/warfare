@@ -13,7 +13,7 @@ interface ControlPanelProps {
   triggerJamming: () => void;
   triggerFlashWar: () => void;
   className?: string;
-  onAction?: () => void; // Callback for mobile close
+  onAction?: () => void;
   trust: number;
   budgets?: Budgets;
   onEndOperation?: () => void;
@@ -44,7 +44,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       spawnHostile();
       onAction?.();
   };
-  
+
   const handleJamming = () => {
       soundEngine.playJamming();
       triggerJamming();
@@ -57,7 +57,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       onAction?.();
   };
 
-  // Helper for tooltips
   const getTooltip = (type: string) => {
       if (!budgets) return "";
       switch(type) {
@@ -83,10 +82,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const isSearchLocked = !!searchLockReason;
 
   return (
-    <div className={clsx("flex flex-col p-8 gap-4 border-r border-black/10 h-full bg-[#F5F5F5] text-black w-full md:w-[280px]", className)}>
-      <div className="mb-8">
+    <div className={clsx("flex flex-col p-4 gap-2 border-r border-black h-full bg-[#D4D0C8] text-black w-full md:w-[280px]", className)}>
+      <div className="mb-4">
         <span className="text-[10px] uppercase opacity-60 block mb-2 font-bold tracking-widest">
-          Swarm Behavior (ROE)
+          Automata Rules
         </span>
         <div className="flex flex-col gap-1.5">
           <FormationButton
@@ -123,35 +122,35 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-4">
         <span className="text-[10px] uppercase opacity-60 block mb-2 font-bold tracking-widest">
-          Adversarial Simulation
+          Injection Params
         </span>
         <div className="flex flex-col gap-1.5">
           <button
             onClick={handleSpawn}
             title={getTooltip('spawn')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-[#FF3333] text-[#FF3333] hover:bg-[#FF3333] hover:text-white transition-all text-left flex items-center gap-2 relative group"
+            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-[#FF0000] text-[#FF0000] hover:bg-[#FF0000] hover:text-white transition-all text-left flex items-center gap-2 relative group"
           >
             <Crosshair size={14} />
             [+] Spawn Hostile
-            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF3333] text-white px-1">CONFIRM</span>}
+            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">CONFIRM</span>}
           </button>
-          
+
           <button
             onClick={handleJamming}
             title={getTooltip('jamming')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#F5F5F5] transition-all text-left flex items-center gap-2"
+            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#D4D0C8] transition-all text-left flex items-center gap-2"
           >
             <Zap size={14} />
             Sim: Comms Jamming
              {trust < 70 && <span className="ml-auto text-[9px] bg-black text-white px-1">CONFIRM</span>}
           </button>
-          
+
           <button
             onClick={handleFlash}
             title={getTooltip('flash')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#F5F5F5] transition-all text-left flex items-center gap-2"
+            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#D4D0C8] transition-all text-left flex items-center gap-2"
           >
             <TriangleAlert size={14} />
             Sim: Flash War
@@ -160,10 +159,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-black/10">
+      <div className="mt-auto pt-4 border-t border-black">
          <button
             onClick={onEndOperation}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition-all text-center"
+            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider bg-black text-white hover:bg-[#00FF00] hover:text-black transition-all text-center"
          >
             End Operation // Report
          </button>
@@ -187,11 +186,11 @@ const FormationButton: React.FC<FormationButtonProps> = ({ active, onClick, labe
     disabled={locked}
     className={clsx(
       "w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2",
-      locked 
+      locked
         ? "opacity-40 cursor-not-allowed border-black text-black bg-transparent"
         : active
-            ? "bg-black text-[#F5F5F5] border-black"
-            : "bg-transparent text-black border-black hover:bg-black hover:text-[#F5F5F5]"
+            ? "bg-[#00FF00] text-black border-black"
+            : "bg-transparent text-black border-black hover:bg-black hover:text-[#D4D0C8]"
     )}
     title={title || (locked ? "Trust level too low for this formation" : "")}
   >

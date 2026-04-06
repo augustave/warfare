@@ -15,11 +15,11 @@ interface BudgetCardProps {
 
 const BudgetCard: React.FC<BudgetCardProps> = ({ label, value }) => {
     const phase = value >= 70 ? 'green' : value >= 40 ? 'yellow' : 'red';
-    const color = phase === 'green' ? 'text-black' : phase === 'yellow' ? 'text-yellow-600' : 'text-red-600';
-    const bg = phase === 'red' ? 'bg-red-50' : 'bg-transparent';
-    
+    const color = phase === 'green' ? 'text-black' : phase === 'yellow' ? 'text-[#0000FF]' : 'text-[#FF0000]';
+    const bg = phase === 'red' ? 'bg-[#FFFFFF]' : 'bg-transparent';
+
     return (
-        <div className={clsx("flex justify-between items-center py-1 border-b border-black/5 last:border-0", bg)}>
+        <div className={clsx("flex justify-between items-center py-1 border-b border-black last:border-0", bg)}>
             <span className="text-[9px] uppercase font-bold tracking-wider opacity-70">{label}</span>
             <span className={clsx("font-mono text-xs font-bold", color)}>{Math.floor(value)}%</span>
         </div>
@@ -27,22 +27,19 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ label, value }) => {
 };
 
 export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
-  const trustPhase = 
-    stats.trust >= 85 ? 'green' : 
-    stats.trust >= 70 ? 'yellow' : 
+  const trustPhase =
+    stats.trust >= 85 ? 'green' :
+    stats.trust >= 70 ? 'yellow' :
     stats.trust >= 50 ? 'orange' : 'red';
 
-  const trustColor = 
-    trustPhase === 'green' ? 'text-green-700 border-green-700' : 
-    trustPhase === 'yellow' ? 'text-yellow-600 border-yellow-600' :
-    trustPhase === 'orange' ? 'text-orange-600 border-orange-600' : 'text-red-600 border-red-600';
-    
-  const trustBg = 
-    trustPhase === 'green' ? 'bg-green-50' : 
-    trustPhase === 'yellow' ? 'bg-yellow-50' :
-    trustPhase === 'orange' ? 'bg-orange-50' : 'bg-red-50';
+  const trustColor =
+    trustPhase === 'green' ? 'text-[#00FF00] border-[#00FF00]' :
+    trustPhase === 'yellow' ? 'text-[#0000FF] border-[#0000FF]' :
+    trustPhase === 'orange' ? 'text-[#FF0000] border-[#FF0000]' : 'text-[#FF0000] border-[#FF0000]';
 
-  const trustLabel = 
+  const trustBg = 'bg-[#FFFFFF]';
+
+  const trustLabel =
     trustPhase === 'green' ? 'TRUSTED' :
     trustPhase === 'yellow' ? 'DEGRADED' :
     trustPhase === 'orange' ? 'OVERSIGHT' : 'REVOKED';
@@ -53,8 +50,8 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
     trustPhase === 'orange' ? <TriangleAlert size={20} /> : <ShieldX size={20} />;
 
   return (
-    <div className={clsx("flex flex-col p-8 gap-6 border-l border-black/10 h-full bg-[#F5F5F5] text-black w-full md:w-[280px]", className)}>
-      
+    <div className={clsx("flex flex-col p-4 gap-3 border-l border-black h-full bg-[#D4D0C8] text-black w-full md:w-[280px]", className)}>
+
       {/* Trust Panel (Priority P0) */}
       <div className={clsx("border-2 p-4 transition-all duration-300", trustColor, trustBg)}>
          <div className="flex justify-between items-start mb-2">
@@ -70,20 +67,20 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
          </div>
       </div>
 
-      <div className="border border-black p-4 bg-white/50">
-        <span className="text-2xl font-black block mb-1">{stats.coverage}%</span>
+      <div className="border border-black p-4 bg-[#FFFFFF]">
+        <span className="text-2xl font-black block mb-1 font-mono">{stats.coverage}%</span>
         <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Domain Awareness</span>
       </div>
 
-      <div className="border border-black p-4 bg-white/50">
-        <span className={clsx("text-2xl font-black block mb-1", stats.networkStatus === 'jammed' ? "text-[#FF3333]" : "text-black")}>
+      <div className="border border-black p-4 bg-[#FFFFFF]">
+        <span className={clsx("text-2xl font-black block mb-1", stats.networkStatus === 'jammed' ? "text-[#FF0000]" : "text-black")}>
           {stats.networkStatus === 'nominal' ? 'MESH' : stats.networkStatus === 'local' ? 'EDGE' : 'OFFLINE'}
         </span>
         <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Network Topology</span>
       </div>
 
       {/* Budget Panel */}
-      <div className="border border-black p-4 bg-white/50 space-y-2">
+      <div className="border border-black p-4 bg-[#FFFFFF] space-y-2">
           <div className="text-[10px] uppercase font-bold tracking-widest border-b-2 border-black pb-1 mb-2">
               Resource Budget
           </div>
@@ -93,19 +90,19 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
           <BudgetCard label="Operator Load" value={stats.budgets.attention} />
       </div>
 
-      <div className="mt-auto border border-black p-4 bg-white/50">
-        <span className={clsx("text-2xl font-black block mb-1", 
-          stats.threatLevel === 'critical' || stats.threatLevel === 'elevated' ? "text-[#FF3333]" : 
-          stats.threatLevel === 'neutralized' ? "text-green-600" : "text-black"
+      <div className="mt-auto border border-black p-4 bg-[#FFFFFF]">
+        <span className={clsx("text-2xl font-black block mb-1",
+          stats.threatLevel === 'critical' || stats.threatLevel === 'elevated' ? "text-[#FF0000]" :
+          stats.threatLevel === 'neutralized' ? "text-[#00FF00]" : "text-black"
         )}>
           {stats.threatLevel.toUpperCase()}
         </span>
         <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Threat Assessment</span>
       </div>
-      
+
       <div className="flex justify-between font-mono text-xs font-bold uppercase tracking-wider opacity-60">
           <span>Latency: {stats.latency}ms</span>
-          <span>v2.4.1</span>
+          <span>v1.0.0</span>
       </div>
     </div>
   );

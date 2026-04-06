@@ -193,7 +193,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
             let flashCount = 0;
             const flashInterval = setInterval(() => {
                 if (!containerRef.current) return;
-                containerRef.current.style.backgroundColor = flashCount % 2 === 0 ? '#FFCCCC' : 'transparent';
+                containerRef.current.style.backgroundColor = flashCount % 2 === 0 ? '#FF0000' : 'transparent';
                 flashCount++;
                 if (flashCount > 5) {
                     clearInterval(flashInterval);
@@ -445,7 +445,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                  if (netCtx) {
                     const progress = Math.min(lockOnTimerRef.current / 180, 1);
                     netCtx.beginPath();
-                    netCtx.strokeStyle = '#FF3333';
+                    netCtx.strokeStyle = '#FF0000';
                     netCtx.lineWidth = 3;
                     netCtx.arc(h.x, h.y, 40 * (1 - progress) + 10, 0, Math.PI * 2);
                     netCtx.stroke();
@@ -512,7 +512,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
             // Strike Lines
             if (activeHostile && currentFormation === 'strike') {
                 netCtx.beginPath();
-                netCtx.strokeStyle = 'rgba(255, 51, 51, 0.4)';
+                netCtx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
                 agentsRef.current.forEach(a => {
                     netCtx.moveTo(a.x, a.y);
                     netCtx.lineTo(activeHostile.x, activeHostile.y);
@@ -547,7 +547,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                         const j = getSmoothedVec2(semanticId, totalJitter, 0.15);
                         
                         if (isSelectedRelationship) {
-                             netCtx.strokeStyle = 'rgba(37, 99, 235, 0.8)'; // Strong Blue
+                             netCtx.strokeStyle = 'rgba(0, 0, 255, 0.8)'; // Strong Blue
                              netCtx.lineWidth = 2;
                              netCtx.setLineDash([5, 5]);
                              
@@ -561,7 +561,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                                  });
                              }
                         } else {
-                             netCtx.strokeStyle = 'rgba(0, 150, 255, 0.15)'; 
+                             netCtx.strokeStyle = 'rgba(0, 0, 255, 0.15)'; 
                              netCtx.lineWidth = 1;
                              netCtx.setLineDash([2, 4]);
                         }
@@ -591,7 +591,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                 const curY = p.y + (p.ty - p.y) * progress;
 
                 netCtx.beginPath();
-                netCtx.fillStyle = '#2563EB';
+                netCtx.fillStyle = '#0000FF';
                 netCtx.arc(curX, curY, 3, 0, Math.PI*2);
                 netCtx.fill();
                 return true;
@@ -613,7 +613,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
               if (point.revealed) revealedCount++;
 
               sensorCtx.beginPath();
-              sensorCtx.fillStyle = point.revealed ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.05)';
+              sensorCtx.fillStyle = point.revealed ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.1)';
               sensorCtx.arc(point.x, point.y, point.revealed ? 3 : 1, 0, Math.PI * 2);
               sensorCtx.fill();
           });
@@ -633,7 +633,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   }, [onStatsUpdate, onLog, renderHostiles]); 
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-[#F5F5F5] overflow-hidden cursor-crosshair">
+    <div ref={containerRef} className="relative w-full h-full bg-[#FFFFFF] overflow-hidden cursor-crosshair">
       <ScanlineOverlay trustPhase={trustPhase} />
       <canvas ref={sensorCanvasRef} className="absolute top-0 left-0 w-full h-full z-0 opacity-50 pointer-events-none" />
       <canvas ref={netCanvasRef} className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none" />
@@ -646,13 +646,13 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
           onMouseDown={(e) => handleMouseDown(e, i)}
           className={clsx(
             "absolute top-0 left-0 w-[20px] h-[20px] bg-black text-white text-[8px] font-bold z-20 flex items-center justify-center cursor-move transition-colors duration-200 border border-transparent hover:border-white hover:z-50 select-none",
-            selectedNode && KNOWLEDGE_BASE[i % Object.keys(KNOWLEDGE_BASE).length]?.id === selectedNode.id ? "bg-blue-600 border-white scale-110 z-50 shadow-[0_0_15px_rgba(37,99,235,0.8)]" : "",
+            selectedNode && KNOWLEDGE_BASE[i % Object.keys(KNOWLEDGE_BASE).length]?.id === selectedNode.id ? "bg-[#0000FF] border-[#0000FF] scale-110 z-50" : "",
              // Highlight related nodes
              selectedNode && GRAPH_RELATIONSHIPS.some(r => 
                 (r.source === selectedNode.id && r.target === KNOWLEDGE_BASE[i % Object.keys(KNOWLEDGE_BASE).length]?.id) ||
                 (r.target === selectedNode.id && r.source === KNOWLEDGE_BASE[i % Object.keys(KNOWLEDGE_BASE).length]?.id)
-             ) ? "bg-cyan-800 border-cyan-400 z-40" : "",
-            "shadow-sm"
+             ) ? "bg-[#0000FF] border-[#00FF00] z-40" : "",
+            ""
           )}
         >
           {KNOWLEDGE_BASE[i % Object.keys(KNOWLEDGE_BASE).length]?.id}
@@ -667,7 +667,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
              if(el) hostileDomsRef.current.set(h.id, el); 
              else hostileDomsRef.current.delete(h.id);
            }}
-           className="absolute top-0 left-0 w-[20px] h-[20px] bg-[#FF3333] border-2 border-white shadow-[0_0_10px_#FF0000] z-30 flex items-center justify-center text-white text-[8px] font-bold animate-pulse"
+           className="absolute top-0 left-0 w-[20px] h-[20px] bg-[#FF0000] border-2 border-[#FF0000] z-30 flex items-center justify-center text-white text-[8px] font-bold animate-pulse"
          >
            TGT
          </div>

@@ -299,14 +299,14 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#F5F5F5] text-black font-sans grid grid-cols-1 md:grid-cols-[280px_1fr_280px] grid-rows-[60px_1fr_150px]">
+    <div className="h-screen w-screen overflow-hidden bg-[#D4D0C8] text-black font-sans grid grid-cols-1 md:grid-cols-[280px_1fr_280px] grid-rows-[60px_1fr_150px]">
       
       <DebugOverlay stats={stats} tickHz={tickHzRef.current} tickCount={loopCount} activeLoops={activeLoopCount} />
 
       {/* Header Left */}
-      <div className="border-b-2 border-black p-4 md:p-6 flex flex-row items-center justify-between md:flex-col md:justify-center bg-[#F5F5F5] z-30 col-start-1 row-start-1 border-r border-black/10">
+      <div className="border-b-2 border-black p-4 md:p-6 flex flex-row items-center justify-between md:flex-col md:justify-center bg-[#D4D0C8] z-30 col-start-1 row-start-1 border-r border-black">
         <h1 className="text-[14px] uppercase tracking-[0.1em] font-bold leading-tight">
-          Agentic Warfare<br/>Sim v2.5 // Patch
+          ASCII Automata<br/>System v1.0 // CTRL
         </h1>
         
         {/* Mobile Menu Trigger */}
@@ -320,10 +320,10 @@ export default function App() {
                         <Menu size={18} />
                     </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[85%] sm:w-[380px] p-0 overflow-y-auto bg-[#F5F5F5]">
-                    <SheetHeader className="p-6 border-b border-black/10">
+                <SheetContent side="left" className="w-[85%] sm:w-[380px] p-0 overflow-y-auto bg-[#D4D0C8]">
+                    <SheetHeader className="p-6 border-b border-black">
                         <SheetTitle className="text-left text-sm font-bold uppercase tracking-widest">
-                            Command & Control
+                            System Control
                         </SheetTitle>
                     </SheetHeader>
                     <ControlPanel 
@@ -337,7 +337,7 @@ export default function App() {
                         trust={stats.trust}
                         budgets={stats.budgets}
                     />
-                    <div className="border-t border-black/10">
+                    <div className="border-t border-black">
                         <StatsPanel stats={stats} className="border-none w-full" />
                     </div>
                 </SheetContent>
@@ -346,7 +346,7 @@ export default function App() {
       </div>
 
       {/* Header Right (Desktop Only) */}
-      <div className="hidden md:flex border-b-2 border-black p-6 flex-col justify-center items-end bg-[#F5F5F5] z-30 col-start-3 row-start-1 border-l border-black/10 text-[11px] font-bold uppercase tracking-wider">
+      <div className="hidden md:flex border-b-2 border-black p-6 flex-col justify-center items-end bg-[#D4D0C8] z-30 col-start-3 row-start-1 border-l border-black text-[11px] font-bold uppercase tracking-wider">
         <div className="flex items-center gap-4">
              <button onClick={toggleSound} className="hover:opacity-50 transition-opacity">
                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} opacity={0.5} />}
@@ -354,7 +354,7 @@ export default function App() {
             <div className="text-right">
                 <span className="block">Ref: 2011fb7e</span>
                 <span>Status: <span className={clsx(
-                    formation === 'strike' ? "text-[#FF3333]" : "text-black"
+                    formation === 'strike' ? "text-[#FF0000]" : "text-black"
                 )}>{formation.toUpperCase()}</span></span>
             </div>
         </div>
@@ -407,12 +407,12 @@ export default function App() {
       </div>
       
       <AlertDialog open={!!pendingAction} onOpenChange={(open) => !open && setPendingAction(null)}>
-        <AlertDialogContent className="bg-[#F5F5F5] border-2 border-black rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+        <AlertDialogContent className="bg-[#D4D0C8] border-2 border-black rounded-none ">
             <AlertDialogHeader>
-                <AlertDialogTitle className="uppercase font-bold tracking-widest text-red-600 flex items-center gap-2">
+                <AlertDialogTitle className="uppercase font-bold tracking-widest text-[#FF0000] flex items-center gap-2">
                     <span className="text-xl">⚠️</span> {pendingAction?.title}
                 </AlertDialogTitle>
-                <AlertDialogDescription className="text-black font-mono text-xs mt-2 border-l-2 border-black/20 pl-4">
+                <AlertDialogDescription className="text-black font-mono text-xs mt-2 border-l-2 border-black pl-4">
                     {pendingAction?.description}
                 </AlertDialogDescription>
             </AlertDialogHeader>
@@ -422,7 +422,7 @@ export default function App() {
                 </AlertDialogCancel>
                 <AlertDialogAction 
                     onClick={pendingAction?.action}
-                    className="rounded-none bg-red-600 hover:bg-red-700 text-white uppercase font-bold text-xs tracking-wider border-2 border-transparent"
+                    className="rounded-none bg-[#FF0000] hover:bg-[#CC0000] text-white uppercase font-bold text-xs tracking-wider border-2 border-transparent"
                 >
                     Authorize Action
                 </AlertDialogAction>

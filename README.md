@@ -1,9 +1,9 @@
-# Agentic Warfare: Sensor Fusion Sim v2.5 (Budgeted Command)
+# ASCII Automata System v1.0 (Budgeted Command)
 
 ## Overview
-**Agentic Warfare** is a high-performance visual simulation that bridges the gap between **drone swarm physics** and **semantic knowledge graphs**. It visualizes how an "Agentic AI" interprets strategic doctrines (e.g., "Kill Web", "Sensing Grid") by physically maneuvering distinct agents into formation while maintaining dynamic data links.
+**ASCII Automata System** is a high-performance visual simulation that bridges the gap between **drone swarm physics** and **semantic knowledge graphs**. Built with a **Utilitarian Generative OS** aesthetic, it visualizes how an "Agentic AI" interprets strategic doctrines (e.g., "Kill Web", "Sensing Grid") by physically maneuvering distinct agents into formation while maintaining dynamic data links.
 
-In **v2.5**, we introduce **Cost Surfaces & Budgeted Command**, a finite resource economy that forces operators to trade off between operational tempo and system sustainability. Every command now consumes specific budgets (Latency, Bandwidth, Energy, Attention), adding strategic tension and consequence to the simulation.
+The system features **Cost Surfaces & Budgeted Command**, a finite resource economy that forces operators to trade off between operational tempo and system sustainability. Every command now consumes specific budgets (Latency, Bandwidth, Energy, Attention), adding strategic tension and consequence to the simulation.
 
 ## New Features (v2.5: Cost Surfaces)
 

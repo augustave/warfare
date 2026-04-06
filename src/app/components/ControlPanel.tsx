@@ -1,8 +1,6 @@
 import React from 'react';
 import { FormationType, Budgets } from '../types';
 import { clsx } from 'clsx';
-import { Crosshair, Shield, Activity, Radio, Zap, TriangleAlert, Lock } from 'lucide-react';
-
 import { soundEngine } from '../utils/SoundEngine';
 import { getFormationLockReason } from '../utils/guards';
 
@@ -33,168 +31,133 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   const handleFormation = (f: FormationType) => {
       if (budgets && getFormationLockReason(f, trust, budgets)) return;
-
       soundEngine.playTransform();
       setFormation(f);
       onAction?.();
   };
 
-  const handleSpawn = () => {
-      soundEngine.playAlert();
-      spawnHostile();
-      onAction?.();
-  };
+  const handleSpawn = () => { soundEngine.playAlert(); spawnHostile(); onAction?.(); };
+  const handleJamming = () => { soundEngine.playJamming(); triggerJamming(); onAction?.(); };
+  const handleFlash = () => { soundEngine.playAlert(); triggerFlashWar(); onAction?.(); };
 
-  const handleJamming = () => {
-      soundEngine.playJamming();
-      triggerJamming();
-      onAction?.();
-  };
-
-  const handleFlash = () => {
-      soundEngine.playAlert();
-      triggerFlashWar();
-      onAction?.();
-  };
-
-  const getTooltip = (type: string) => {
-      if (!budgets) return "";
-      switch(type) {
-          case 'idle': return "Cost: Low per tick | Primary: None";
-          case 'search': return "Cost: High Bandwidth/Lat | Primary: Bandwidth";
-          case 'shield': return "Cost: High Energy | Primary: Endurance";
-          case 'strike': return "Cost: +Burst / Very High | Primary: All";
-          case 'spawn': return "Cost: +6 Attention | Burst";
-          case 'jamming': return "Cost: +Bandwidth Drain | Burst";
-          case 'flash': return "Cost: +18 Attention | Burst";
-          default: return "";
-      }
-  };
-
-  // Lock checks (single source of truth)
   const defaultBudgets = { latency: 100, bandwidth: 100, energy: 100, attention: 100 };
   const b = budgets || defaultBudgets;
   const strikeLockReason = getFormationLockReason('strike', trust, b);
   const shieldLockReason = getFormationLockReason('shield', trust, b);
   const searchLockReason = getFormationLockReason('search', trust, b);
-  const isStrikeLocked = !!strikeLockReason;
-  const isShieldLocked = !!shieldLockReason;
-  const isSearchLocked = !!searchLockReason;
 
   return (
-    <div className={clsx("flex flex-col p-4 gap-2 border-r border-black h-full bg-[#D4D0C8] text-black w-full md:w-[280px]", className)}>
-      <div className="mb-4">
-        <span className="text-[10px] uppercase opacity-60 block mb-2 font-bold tracking-widest">
-          Automata Rules
-        </span>
-        <div className="flex flex-col gap-1.5">
-          <FormationButton
-            active={currentFormation === 'idle'}
+    <div className={clsx("flex flex-col gap-1 h-full bg-[#D4D0C8] text-black", className)}>
+
+      {/* Formation Group Box */}
+      <div className="win95-window p-0">
+        <div className="win95-titlebar text-[10px] py-[2px]">
+          <span>Doctrine Control</span>
+        </div>
+        <div className="p-2 space-y-1">
+          <Win95Radio
+            checked={currentFormation === 'idle'}
             onClick={() => handleFormation('idle')}
-            label="01_Net_Idle"
-            icon={<Activity size={14} />}
-            title={getTooltip('idle')}
+            label="01 Net_Idle"
+            shortcut="F1"
           />
-          <FormationButton
-            active={currentFormation === 'search'}
+          <Win95Radio
+            checked={currentFormation === 'search'}
             onClick={() => handleFormation('search')}
-            label="02_Sensing_Grid"
-            icon={<Radio size={14} />}
-            locked={!!isSearchLocked}
-            title={searchLockReason ? `LOCKED: ${searchLockReason}` : getTooltip('search')}
+            label="02 Sensing_Grid"
+            shortcut="F2"
+            locked={!!searchLockReason}
+            lockReason={searchLockReason || undefined}
           />
-          <FormationButton
-            active={currentFormation === 'shield'}
+          <Win95Radio
+            checked={currentFormation === 'shield'}
             onClick={() => handleFormation('shield')}
-            label="03_A2AD_Wall"
-            icon={<Shield size={14} />}
-            locked={!!isShieldLocked}
-            title={shieldLockReason ? `LOCKED: ${shieldLockReason}` : getTooltip('shield')}
+            label="03 A2AD_Wall"
+            shortcut="F3"
+            locked={!!shieldLockReason}
+            lockReason={shieldLockReason || undefined}
           />
-          <FormationButton
-            active={currentFormation === 'strike'}
+          <Win95Radio
+            checked={currentFormation === 'strike'}
             onClick={() => handleFormation('strike')}
-            label="04_Kill_Web"
-            icon={<Crosshair size={14} />}
-            locked={!!isStrikeLocked}
-            title={strikeLockReason ? `LOCKED: ${strikeLockReason}` : getTooltip('strike')}
+            label="04 Kill_Web"
+            shortcut="F4"
+            locked={!!strikeLockReason}
+            lockReason={strikeLockReason || undefined}
           />
         </div>
       </div>
 
-      <div className="mb-4">
-        <span className="text-[10px] uppercase opacity-60 block mb-2 font-bold tracking-widest">
-          Injection Params
-        </span>
-        <div className="flex flex-col gap-1.5">
-          <button
-            onClick={handleSpawn}
-            title={getTooltip('spawn')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-[#FF0000] text-[#FF0000] hover:bg-[#FF0000] hover:text-white transition-all text-left flex items-center gap-2 relative group"
-          >
-            <Crosshair size={14} />
-            [+] Spawn Hostile
-            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">CONFIRM</span>}
+      {/* Injection Group Box */}
+      <div className="win95-window p-0">
+        <div className="win95-titlebar text-[10px] py-[2px]">
+          <span>Injection Parameters</span>
+        </div>
+        <div className="p-2 space-y-1">
+          <button onClick={handleSpawn} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
+            <span className="text-[#FF0000]">▶</span> Spawn Hostile
+            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
           </button>
-
-          <button
-            onClick={handleJamming}
-            title={getTooltip('jamming')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#D4D0C8] transition-all text-left flex items-center gap-2"
-          >
-            <Zap size={14} />
-            Sim: Comms Jamming
-             {trust < 70 && <span className="ml-auto text-[9px] bg-black text-white px-1">CONFIRM</span>}
+          <button onClick={handleJamming} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
+            <span>▶</span> Comms Jamming
+            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
           </button>
-
-          <button
-            onClick={handleFlash}
-            title={getTooltip('flash')}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border border-black text-black hover:bg-black hover:text-[#D4D0C8] transition-all text-left flex items-center gap-2"
-          >
-            <TriangleAlert size={14} />
-            Sim: Flash War
-             {trust < 70 && <span className="ml-auto text-[9px] bg-black text-white px-1">CONFIRM</span>}
+          <button onClick={handleFlash} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
+            <span className="text-[#FF0000]">▶</span> Flash War
+            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
           </button>
         </div>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-black">
-         <button
-            onClick={onEndOperation}
-            className="w-full p-2.5 text-[11px] font-bold uppercase tracking-wider bg-black text-white hover:bg-[#00FF00] hover:text-black transition-all text-center"
-         >
-            End Operation // Report
-         </button>
+      {/* Cost Reference */}
+      <div className="win95-groupbox text-[9px] font-mono leading-relaxed text-black/60">
+        <span className="win95-groupbox-label text-[9px]">Cost Table</span>
+        <div className="space-y-[2px]">
+          <div>IDLE.... LAT:0.02 BW:0.01 NRG:0.02</div>
+          <div>SEARCH.. LAT:0.08 BW:0.12 NRG:0.10</div>
+          <div>SHIELD.. LAT:0.06 BW:0.08 NRG:0.14</div>
+          <div className="text-[#FF0000]">STRIKE.. LAT:0.14 BW:0.16 NRG:0.20</div>
+        </div>
+      </div>
+
+      <div className="mt-auto pt-1">
+        <button
+          onClick={onEndOperation}
+          className="win95-btn w-full text-[11px] font-bold text-center normal-case"
+        >
+          End Operation ▪ Report
+        </button>
       </div>
     </div>
   );
 };
 
-interface FormationButtonProps {
-  active: boolean;
+interface Win95RadioProps {
+  checked: boolean;
   onClick: () => void;
   label: string;
-  icon: React.ReactNode;
+  shortcut?: string;
   locked?: boolean;
-  title?: string;
+  lockReason?: string;
 }
 
-const FormationButton: React.FC<FormationButtonProps> = ({ active, onClick, label, icon, locked, title }) => (
+const Win95Radio: React.FC<Win95RadioProps> = ({ checked, onClick, label, shortcut, locked, lockReason }) => (
   <button
     onClick={locked ? undefined : onClick}
     disabled={locked}
+    title={lockReason || ''}
     className={clsx(
-      "w-full p-2.5 text-[11px] font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2",
-      locked
-        ? "opacity-40 cursor-not-allowed border-black text-black bg-transparent"
-        : active
-            ? "bg-[#00FF00] text-black border-black"
-            : "bg-transparent text-black border-black hover:bg-black hover:text-[#D4D0C8]"
+      "w-full text-[11px] flex items-center gap-2 py-[3px] px-1 cursor-default normal-case",
+      locked ? "opacity-40" : "hover:bg-[#000080] hover:text-white",
+      checked && "font-bold"
     )}
-    title={title || (locked ? "Trust level too low for this formation" : "")}
   >
-    {locked ? <Lock size={14} /> : icon}
-    {label}
+    {/* Win95-style radio button */}
+    <span className="w-[12px] h-[12px] rounded-full border border-[#808080] border-r-white border-b-white bg-white flex items-center justify-center shrink-0">
+      {checked && <span className="w-[6px] h-[6px] rounded-full bg-black" />}
+    </span>
+    {locked && <span className="text-[9px]">🔒</span>}
+    <span>{label}</span>
+    {shortcut && <span className="ml-auto text-[9px] opacity-40">{shortcut}</span>}
   </button>
 );

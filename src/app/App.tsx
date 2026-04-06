@@ -299,36 +299,42 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#D4D0C8] text-black font-sans grid grid-cols-1 md:grid-cols-[280px_1fr_280px] grid-rows-[60px_1fr_150px]">
-      
+    <div className="h-screen w-screen overflow-hidden bg-[#008080] p-1 md:p-2 flex flex-col">
+
       <DebugOverlay stats={stats} tickHz={tickHzRef.current} tickCount={loopCount} activeLoops={activeLoopCount} />
 
-      {/* Header Left */}
-      <div className="border-b-2 border-black p-4 md:p-6 flex flex-row items-center justify-between md:flex-col md:justify-center bg-[#D4D0C8] z-30 col-start-1 row-start-1 border-r border-black">
-        <h1 className="text-[14px] uppercase tracking-[0.1em] font-bold leading-tight">
-          ASCII Automata<br/>System v1.0 // CTRL
-        </h1>
-        
-        {/* Mobile Menu Trigger */}
-        <div className="flex md:hidden gap-2">
-            <button onClick={toggleSound} className="p-2">
-               {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} opacity={0.5} />}
+      {/* ═══ MAIN WINDOW FRAME ═══ */}
+      <div className="win95-window flex-1 flex flex-col overflow-hidden">
+
+        {/* ─── Title Bar ─── */}
+        <div className="win95-titlebar shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-[8px]">■</span>
+            <span>ASCII Automata System v1.0</span>
+            <span className="text-[9px] opacity-60 ml-2 hidden md:inline">
+              [{formation.toUpperCase()}] // PID:{Math.floor(stats.trust).toString(16).toUpperCase().padStart(2,'0')}h // T+{Math.floor((Date.now() - startTime) / 1000)}s
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={toggleSound} className="win95-sys-btn" title={soundEnabled ? "Mute" : "Unmute"}>
+              {soundEnabled ? '♪' : '×'}
             </button>
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+
+            {/* Mobile Menu Trigger */}
+            <div className="flex md:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                    <button className="p-2 border border-black hover:bg-black hover:text-white transition-colors">
-                        <Menu size={18} />
-                    </button>
+                  <button className="win95-sys-btn" title="Menu">☰</button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[85%] sm:w-[380px] p-0 overflow-y-auto bg-[#D4D0C8]">
-                    <SheetHeader className="p-6 border-b border-black">
-                        <SheetTitle className="text-left text-sm font-bold uppercase tracking-widest">
+                    <SheetHeader className="p-4 border-b border-black">
+                        <SheetTitle className="text-left text-[11px] font-bold">
                             System Control
                         </SheetTitle>
                     </SheetHeader>
-                    <ControlPanel 
+                    <ControlPanel
                         className="border-none w-full"
-                        currentFormation={formation} 
+                        currentFormation={formation}
                         setFormation={handleFormationChange}
                         spawnHostile={handleSpawnHostile}
                         triggerJamming={handleTriggerJamming}
@@ -337,100 +343,137 @@ export default function App() {
                         trust={stats.trust}
                         budgets={stats.budgets}
                     />
-                    <div className="border-t border-black">
-                        <StatsPanel stats={stats} className="border-none w-full" />
-                    </div>
+                    <StatsPanel stats={stats} className="border-none w-full" />
                 </SheetContent>
-            </Sheet>
-        </div>
-      </div>
-
-      {/* Header Right (Desktop Only) */}
-      <div className="hidden md:flex border-b-2 border-black p-6 flex-col justify-center items-end bg-[#D4D0C8] z-30 col-start-3 row-start-1 border-l border-black text-[11px] font-bold uppercase tracking-wider">
-        <div className="flex items-center gap-4">
-             <button onClick={toggleSound} className="hover:opacity-50 transition-opacity">
-               {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} opacity={0.5} />}
-            </button>
-            <div className="text-right">
-                <span className="block">Ref: 2011fb7e</span>
-                <span>Status: <span className={clsx(
-                    formation === 'strike' ? "text-[#FF0000]" : "text-black"
-                )}>{formation.toUpperCase()}</span></span>
+              </Sheet>
             </div>
+
+            <button className="win95-sys-btn hidden md:inline-flex" title="Minimize">_</button>
+            <button className="win95-sys-btn hidden md:inline-flex" title="Maximize">□</button>
+            <button className="win95-sys-btn hidden md:inline-flex" title="Close">×</button>
+          </div>
+        </div>
+
+        {/* ─── Menu Bar ─── */}
+        <div className="shrink-0 bg-[#D4D0C8] border-b border-[#808080] px-1 py-[2px] text-[11px] hidden md:flex gap-0 items-center">
+          <span className="px-2 py-[1px] hover:bg-[#000080] hover:text-white cursor-default"><u>F</u>ile</span>
+          <span className="px-2 py-[1px] hover:bg-[#000080] hover:text-white cursor-default"><u>V</u>iew</span>
+          <span className="px-2 py-[1px] hover:bg-[#000080] hover:text-white cursor-default"><u>S</u>imulation</span>
+          <span className="px-2 py-[1px] hover:bg-[#000080] hover:text-white cursor-default"><u>D</u>octrine</span>
+          <span className="px-2 py-[1px] hover:bg-[#000080] hover:text-white cursor-default"><u>H</u>elp</span>
+          <div className="ml-auto flex items-center gap-2 font-mono text-[10px] text-black/50">
+            <span>Ref:2011fb7e</span>
+            <span className={clsx(formation === 'strike' && "text-[#FF0000] font-bold")}>
+              MODE:{formation.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        {/* ─── Main Content Area ─── */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+          {/* Left Panel (Controls) */}
+          <div className="hidden md:flex flex-col w-[260px] shrink-0 bg-[#D4D0C8] p-1">
+            <ControlPanel
+              currentFormation={formation}
+              setFormation={handleFormationChange}
+              spawnHostile={handleSpawnHostile}
+              triggerJamming={handleTriggerJamming}
+              triggerFlashWar={handleTriggerFlashWar}
+              trust={stats.trust}
+              budgets={stats.budgets}
+              onEndOperation={() => setIsAAROpen(true)}
+            />
+          </div>
+
+          {/* Center: Stage + Terminal */}
+          <div className="flex-1 flex flex-col overflow-hidden p-1">
+            {/* Main Stage */}
+            <div className="flex-1 relative win95-inset overflow-hidden">
+              <ErrorBoundary>
+                <MainStage
+                  ref={mainStageRef}
+                  formation={formation}
+                  selectedNode={selectedNode}
+                  onAgentClick={setSelectedNode}
+                  onStatsUpdate={handleStatsUpdate}
+                  onLog={handleLog}
+                  trust={stats.trust}
+                  budgets={stats.budgets}
+                />
+              </ErrorBoundary>
+              <DataOverlay
+                node={selectedNode}
+                onClose={() => setSelectedNode(null)}
+              />
+            </div>
+
+            {/* Terminal */}
+            <div className="shrink-0 mt-1">
+              <Terminal logs={logs} />
+            </div>
+          </div>
+
+          {/* Right Panel (Stats) */}
+          <div className="hidden md:flex flex-col w-[260px] shrink-0 bg-[#D4D0C8] p-1">
+            <StatsPanel stats={stats} />
+          </div>
+        </div>
+
+        {/* ─── Status Bar ─── */}
+        <div className="win95-statusbar shrink-0 flex items-center gap-2 text-[10px] font-mono">
+          <span className="win95-statusbar-field flex-1">
+            {formation === 'strike' ? '⚠ STRIKE MODE ACTIVE' : 'Ready'}
+          </span>
+          <span className="win95-statusbar-field">
+            TRUST:{Math.floor(stats.trust)}%
+          </span>
+          <span className="win95-statusbar-field">
+            NRG:{Math.floor(stats.budgets.energy)}%
+          </span>
+          <span className="win95-statusbar-field">
+            BW:{Math.floor(stats.budgets.bandwidth)}%
+          </span>
+          <span className="win95-statusbar-field hidden md:inline">
+            NET:{stats.networkStatus === 'nominal' ? 'MESH' : stats.networkStatus === 'jammed' ? 'OFFLINE' : 'EDGE'}
+          </span>
+          <span className="win95-statusbar-field hidden md:inline">
+            COV:{stats.coverage}%
+          </span>
         </div>
       </div>
 
-      {/* Left Panel (Controls - Desktop) */}
-      <div className="hidden md:block row-start-2 row-span-2 col-start-1 h-full overflow-hidden z-20">
-        <ControlPanel 
-          currentFormation={formation} 
-          setFormation={handleFormationChange}
-          spawnHostile={handleSpawnHostile}
-          triggerJamming={handleTriggerJamming}
-          triggerFlashWar={handleTriggerFlashWar}
-          trust={stats.trust}
-          budgets={stats.budgets}
-          onEndOperation={() => setIsAAROpen(true)}
-        />
-      </div>
-
-      {/* Main Stage (Spans full center column) */}
-      <div className="row-start-1 row-span-3 col-start-1 md:col-start-2 h-full w-full relative z-0">
-        <ErrorBoundary>
-          <MainStage
-            ref={mainStageRef}
-            formation={formation}
-            selectedNode={selectedNode}
-            onAgentClick={setSelectedNode}
-            onStatsUpdate={handleStatsUpdate}
-            onLog={handleLog}
-            trust={stats.trust}
-            budgets={stats.budgets}
-          />
-        </ErrorBoundary>
-        <DataOverlay
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-        />
-      </div>
-
-      {/* Right Panel (Stats) */}
-      <div className="hidden md:block row-start-2 row-span-2 col-start-3 h-full overflow-hidden z-20">
-        <StatsPanel stats={stats} />
-      </div>
-
-      {/* Terminal (Bottom Center Overlay) */}
-      <div className="row-start-3 col-start-1 md:col-start-2 h-full w-full z-20 pointer-events-none flex flex-col justify-end">
-        <div className="pointer-events-auto h-full w-full">
-            <Terminal logs={logs} />
-        </div>
-      </div>
-      
+      {/* ═══ DIALOGS ═══ */}
       <AlertDialog open={!!pendingAction} onOpenChange={(open) => !open && setPendingAction(null)}>
-        <AlertDialogContent className="bg-[#D4D0C8] border-2 border-black rounded-none ">
-            <AlertDialogHeader>
-                <AlertDialogTitle className="uppercase font-bold tracking-widest text-[#FF0000] flex items-center gap-2">
-                    <span className="text-xl">⚠️</span> {pendingAction?.title}
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-black font-mono text-xs mt-2 border-l-2 border-black pl-4">
-                    {pendingAction?.description}
+        <AlertDialogContent className="win95-window p-0 rounded-none border-none max-w-md">
+            <div className="win95-titlebar">
+              <span>⚠ {pendingAction?.title}</span>
+              <button className="win95-sys-btn" onClick={() => setPendingAction(null)}>×</button>
+            </div>
+            <div className="p-4 bg-[#D4D0C8]">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="sr-only">{pendingAction?.title}</AlertDialogTitle>
+                <AlertDialogDescription className="text-black font-mono text-[11px] flex items-start gap-3">
+                  <span className="text-3xl leading-none">⚠</span>
+                  <span>{pendingAction?.description}</span>
                 </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="mt-6 gap-2 sm:gap-0">
-                <AlertDialogCancel className="rounded-none border-black hover:bg-black hover:text-white uppercase font-bold text-xs tracking-wider">
-                    Abort
+              </AlertDialogHeader>
+              <AlertDialogFooter className="mt-4 flex justify-end gap-2">
+                <AlertDialogCancel className="win95-btn text-[11px]">
+                  Cancel
                 </AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={pendingAction?.action}
-                    className="rounded-none bg-[#FF0000] hover:bg-[#CC0000] text-white uppercase font-bold text-xs tracking-wider border-2 border-transparent"
+                <AlertDialogAction
+                  onClick={pendingAction?.action}
+                  className="win95-btn text-[11px] font-bold"
                 >
-                    Authorize Action
+                  Authorize
                 </AlertDialogAction>
-            </AlertDialogFooter>
+              </AlertDialogFooter>
+            </div>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AfterActionReport 
+      <AfterActionReport
         open={isAAROpen}
         onOpenChange={setIsAAROpen}
         stats={{

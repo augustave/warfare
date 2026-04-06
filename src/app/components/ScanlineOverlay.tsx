@@ -9,41 +9,36 @@ interface ScanlineOverlayProps {
 export const ScanlineOverlay: React.FC<ScanlineOverlayProps> = ({ trustPhase = 'green' }) => {
   return (
     <div className={clsx(
-        "absolute inset-0 pointer-events-none z-[100] overflow-hidden transition-all duration-500",
-        trustPhase === 'red' && "opacity-80",
-        trustPhase === 'orange' && "opacity-60",
-        trustPhase === 'yellow' && "opacity-30",
-        trustPhase === 'green' && "opacity-20"
+      "absolute inset-0 pointer-events-none z-[100] overflow-hidden transition-all duration-500",
+      trustPhase === 'red' && "opacity-100",
+      trustPhase === 'orange' && "opacity-70",
+      trustPhase === 'yellow' && "opacity-30",
+      trustPhase === 'green' && "opacity-0"
     )}>
-       {/* CRT Phosphor Scanlines — horizontal lines every 3px */}
-       <div className="w-full h-full crt-scanlines pointer-events-none" />
+      {/* Noise/grain overlay at low trust — pure B&W static */}
+      {(trustPhase === 'red' || trustPhase === 'orange') && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              0deg,
+              rgba(0,0,0,0.03) 0px,
+              rgba(0,0,0,0.03) 1px,
+              transparent 1px,
+              transparent 4px
+            )`,
+          }}
+        />
+      )}
 
-       {/* Sweeping scan line */}
-       <div className={clsx(
-           "absolute top-0 left-0 w-full h-[2px] animate-scanline",
-           trustPhase === 'red' ? "bg-[#FF0000]/20 h-[4px]" :
-           trustPhase === 'orange' ? "bg-[#FF0000]/10 h-[3px]" :
-           "bg-[#00FF00]/8"
-       )} />
-
-       {/* Low-trust vignette */}
-       {(trustPhase === 'red' || trustPhase === 'orange') && (
-         <div className="absolute inset-0 pointer-events-none"
-           style={{
-             background: trustPhase === 'red'
-               ? 'radial-gradient(ellipse at center, transparent 40%, rgba(255,0,0,0.08) 100%)'
-               : 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.05) 100%)'
-           }}
-         />
-       )}
-
-       {trustPhase === 'red' && (
-           <div className="absolute inset-0 flex items-center justify-center opacity-8 pointer-events-none animate-pulse">
-               <span className="font-pixel text-[48px] text-[#FF0000] rotate-12 border-4 border-[#FF0000] p-6 tracking-widest opacity-[0.08]">
-                   REVOKED
-               </span>
-           </div>
-       )}
+      {/* REVOKED stamp */}
+      {trustPhase === 'red' && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-[80px] font-black text-black opacity-[0.04] rotate-[-12deg] tracking-[0.2em] uppercase border-[6px] border-black p-8">
+            REVOKED
+          </span>
+        </div>
+      )}
     </div>
   );
 };

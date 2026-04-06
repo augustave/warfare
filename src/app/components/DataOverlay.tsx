@@ -9,35 +9,33 @@ interface DataOverlayProps {
 export const DataOverlay: React.FC<DataOverlayProps> = ({ node, onClose }) => {
   if (!node) return null;
 
-  const constructId = Math.random().toString(36).substring(2, 9).toUpperCase();
-
   return (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] max-w-[90%] max-h-[80vh] z-50 animate-in fade-in zoom-in-95 duration-200">
-      <div className="win95-window flex flex-col">
-        {/* Title bar */}
-        <div className="win95-titlebar">
-          <span>{node.id} — Properties</span>
-          <button className="win95-sys-btn" onClick={onClose}>×</button>
+      <div className="bg-white border-[4px] border-black flex flex-col">
+        {/* Header beam */}
+        <div className="beam-h-heavy flex items-center justify-between px-4 text-white">
+          <span className="font-black text-[11px] tracking-wider">{node.id}</span>
+          <button onClick={onClose} className="font-black text-[14px] hover:opacity-50">×</button>
         </div>
 
-        {/* Content */}
-        <div className="p-4 bg-[#D4D0C8] space-y-3 overflow-y-auto max-h-[60vh]">
-          <div className="win95-groupbox">
-            <span className="win95-groupbox-label">Identity</span>
-            <div className="font-mono text-[11px] space-y-1">
-              <div><span className="text-black/50">NODE_ID:</span> {node.id}</div>
-              <div><span className="text-black/50">TITLE:  </span> {node.title}</div>
-              <div><span className="text-black/50">TYPE:   </span> {node.type}</div>
-              <div><span className="text-black/50">REF:    </span> {constructId}</div>
-            </div>
+        <div className="p-5 space-y-4 overflow-y-auto max-h-[60vh]">
+          <div>
+            <div className="node-label mb-1">Title</div>
+            <div className="text-[14px] font-black uppercase">{node.title}</div>
           </div>
-
-          <div className="win95-inset p-3 bg-white">
-            <div className="text-[11px] font-mono leading-relaxed">{node.body}</div>
+          <div className="beam-h" />
+          <div>
+            <div className="node-label mb-1">Type</div>
+            <span className="inv-inline">{node.type}</span>
           </div>
-
+          <div className="beam-h" />
+          <div>
+            <div className="node-label mb-1">Body</div>
+            <div className="text-[12px] font-bold leading-relaxed">{node.body}</div>
+          </div>
+          <div className="beam-h" />
           <div className="flex justify-end">
-            <button className="win95-btn text-[11px]" onClick={onClose}>OK</button>
+            <button className="brut-btn text-[11px]" onClick={onClose}>Close</button>
           </div>
         </div>
       </div>

@@ -1,50 +1,55 @@
+/* ═══════════════════════════════════════════════════
+   BRUTALIST FLOW THEME
+   Pure black-and-white diagrammatic typography.
+   Inspired by Maciunas Fluxus charts.
+   ═══════════════════════════════════════════════════ */
+
 :root {
+  --ink: #000000;
+  --paper: #FFFFFF;
+  --beam: 6px;           /* structural connector weight */
+  --beam-heavy: 20px;    /* major beam weight */
+  --font-stack: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* shadcn compat tokens — all mapped to B&W */
   --font-size: 16px;
-  --background: #D4D0C8;
+  --background: #FFFFFF;
   --foreground: #000000;
-  --card: #D4D0C8;
+  --card: #FFFFFF;
   --card-foreground: #000000;
-  --popover: #D4D0C8;
+  --popover: #FFFFFF;
   --popover-foreground: #000000;
   --primary: #000000;
   --primary-foreground: #FFFFFF;
-  --secondary: #D4D0C8;
+  --secondary: #FFFFFF;
   --secondary-foreground: #000000;
-  --muted: #D4D0C8;
+  --muted: #FFFFFF;
   --muted-foreground: #000000;
-  --accent: #D4D0C8;
+  --accent: #FFFFFF;
   --accent-foreground: #000000;
-  --destructive: #FF0000;
+  --destructive: #000000;
   --destructive-foreground: #FFFFFF;
   --border: #000000;
   --input: #000000;
   --input-background: #FFFFFF;
-  --switch-background: #D4D0C8;
+  --switch-background: #FFFFFF;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --ring: #000000;
-  --chart-1: #00FF00;
-  --chart-2: #0000FF;
-  --chart-3: #FF0000;
+  --chart-1: #000000;
+  --chart-2: #000000;
+  --chart-3: #000000;
   --chart-4: #000000;
-  --chart-5: #D4D0C8;
+  --chart-5: #000000;
   --radius: 0px;
-  --sidebar: #D4D0C8;
+  --sidebar: #FFFFFF;
   --sidebar-foreground: #000000;
   --sidebar-primary: #000000;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #D4D0C8;
+  --sidebar-accent: #FFFFFF;
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #000000;
   --sidebar-ring: #000000;
-
-  /* ASCII Automata tokens */
-  --aa-system-grey: #D4D0C8;
-  --aa-stroke: #000000;
-  --aa-canvas: #FFFFFF;
-  --aa-execute: #00FF00;
-  --aa-alert-blue: #0000FF;
-  --aa-error: #FF0000;
 }
 
 @theme inline {
@@ -95,48 +100,34 @@
 
   body {
     @apply bg-background text-foreground;
+    filter: contrast(110%);
   }
 
   html {
     font-size: var(--font-size);
-    font-family: Arial, Verdana, 'MS Sans Serif', sans-serif;
+    font-family: var(--font-stack);
   }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  h1, h2, h3, h4 {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1.0;
   }
 
   label {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.2;
   }
 
   button {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-weight: 700;
     text-transform: uppercase;
+    line-height: 1.2;
+    cursor: pointer;
   }
 
   input {
@@ -147,199 +138,180 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   WIN95 3D CHROME SYSTEM
+   STRUCTURAL BEAMS
    ═══════════════════════════════════════════════════ */
 
-/* Raised surface (buttons, panels) */
-.win95-outset {
-  border: 2px solid;
-  border-color: #ffffff #0a0a0a #0a0a0a #ffffff;
-  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+.beam {
+  background-color: var(--ink);
 }
 
-/* Sunken surface (inputs, wells, status bars) */
-.win95-inset {
-  border: 2px solid;
-  border-color: #0a0a0a #ffffff #ffffff #0a0a0a;
-  box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
+.beam-h {
+  height: var(--beam);
+  width: 100%;
 }
 
-/* Window frame */
-.win95-window {
-  background: #D4D0C8;
-  border: 2px solid;
-  border-color: #ffffff #0a0a0a #0a0a0a #ffffff;
-  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+.beam-h-heavy {
+  height: var(--beam-heavy);
+  width: 100%;
 }
 
-/* Title bar — navy blue gradient */
-.win95-titlebar {
-  background: linear-gradient(90deg, #000080, #1084d0);
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
-  padding: 3px 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  user-select: none;
-  letter-spacing: 0.02em;
-  font-family: Arial, Verdana, 'MS Sans Serif', sans-serif;
+.beam-v {
+  width: var(--beam);
 }
 
-.win95-titlebar-inactive {
-  background: linear-gradient(90deg, #808080, #b0b0b0);
-}
-
-/* System button cluster [_][□][X] */
-.win95-sys-btn {
-  background: #D4D0C8;
-  border: 2px solid;
-  border-color: #ffffff #0a0a0a #0a0a0a #ffffff;
-  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
-  width: 16px;
-  height: 14px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 7px;
-  line-height: 1;
-  cursor: default;
-  font-family: 'Marlett', Arial, sans-serif;
-}
-
-.win95-sys-btn:active {
-  border-color: #0a0a0a #ffffff #ffffff #0a0a0a;
-  box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
-}
-
-/* Standard button with 3D beveling */
-.win95-btn {
-  background: #D4D0C8;
-  border: 2px solid;
-  border-color: #ffffff #0a0a0a #0a0a0a #ffffff;
-  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
-  padding: 3px 8px;
-  font-size: 11px;
-  cursor: pointer;
-  font-family: Arial, Verdana, 'MS Sans Serif', sans-serif;
-  text-align: left;
-}
-
-.win95-btn:active, .win95-btn-pressed {
-  border-color: #0a0a0a #ffffff #ffffff #0a0a0a;
-  box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
-  padding: 4px 7px 2px 9px;
-}
-
-.win95-btn:disabled {
-  color: #808080;
-  text-shadow: 1px 1px 0 #ffffff;
-  cursor: default;
-}
-
-/* Group box — labeled border */
-.win95-groupbox {
-  border: 1px solid #808080;
-  box-shadow: 1px 1px 0 #ffffff;
-  padding: 12px 8px 8px;
-  position: relative;
-  margin-top: 8px;
-}
-
-.win95-groupbox-label {
-  position: absolute;
-  top: -7px;
-  left: 8px;
-  background: #D4D0C8;
-  padding: 0 4px;
-  font-size: 11px;
-  font-weight: normal;
-}
-
-/* Progress bar */
-.win95-progress {
-  border: 2px solid;
-  border-color: #0a0a0a #ffffff #ffffff #0a0a0a;
-  box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
-  background: #D4D0C8;
-  height: 16px;
-}
-
-.win95-progress-bar {
-  background: #000080;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-/* Status bar at bottom */
-.win95-statusbar {
-  background: #D4D0C8;
-  border-top: 2px solid;
-  border-top-color: #808080;
-  box-shadow: inset 0 1px 0 #ffffff;
-  font-size: 11px;
-  padding: 2px 4px;
-}
-
-.win95-statusbar-field {
-  border: 1px solid;
-  border-color: #808080 #ffffff #ffffff #808080;
-  padding: 1px 4px;
-  font-size: 11px;
+.beam-v-heavy {
+  width: var(--beam-heavy);
 }
 
 /* ═══════════════════════════════════════════════════
-   CRT / PHOSPHOR EFFECTS
+   NODE BLOCKS — typographic information clusters
    ═══════════════════════════════════════════════════ */
 
-.crt-glow {
-  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+.node-block {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
 }
 
-.crt-scanlines {
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0px,
-    rgba(0, 0, 0, 0.15) 1px,
-    transparent 1px,
-    transparent 3px
-  );
+.node-label {
+  font-weight: 900;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0.4;
 }
 
-/* Pixel font utility */
-.font-pixel {
-  font-family: 'Press Start 2P', monospace;
+/* ═══════════════════════════════════════════════════
+   INVERTED BLOCKS — white on black for emphasis
+   ═══════════════════════════════════════════════════ */
+
+.inv {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+.inv-inline {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1px 6px;
+  font-weight: 700;
+  font-size: 10px;
+  display: inline-block;
 }
 
-.animate-scanline {
-  animation: scanline 6s linear infinite;
+/* ═══════════════════════════════════════════════════
+   BRUTALIST BUTTON
+   ═══════════════════════════════════════════════════ */
+
+.brut-btn {
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  padding: 6px 12px;
+  font-weight: 900;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.05s, color 0.05s;
 }
 
-@keyframes blink-cursor {
+.brut-btn:hover, .brut-btn-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.brut-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════
+   CONNECTOR LABELS — text on beams
+   ═══════════════════════════════════════════════════ */
+
+.connector-label {
+  font-weight: 700;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  background: var(--paper);
+  padding: 0 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   TIMELINE / STATUS BAR
+   ═══════════════════════════════════════════════════ */
+
+.timeline-bar {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ═══════════════════════════════════════════════════
+   DATA DISPLAY
+   ═══════════════════════════════════════════════════ */
+
+.data-huge {
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.data-large {
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.data-label {
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS / BUDGET BARS — brutalist style
+   ═══════════════════════════════════════════════════ */
+
+.brut-bar {
+  height: 8px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  position: relative;
+}
+
+.brut-bar-fill {
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.3s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION
+   ═══════════════════════════════════════════════════ */
+
+@keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
 .animate-blink {
-  animation: blink-cursor 1s step-end infinite;
+  animation: blink 1s step-end infinite;
 }
 
-@keyframes crt-flicker {
-  0% { opacity: 0.97; }
-  5% { opacity: 1; }
-  10% { opacity: 0.98; }
-  15% { opacity: 1; }
-  100% { opacity: 1; }
-}
-
-.crt-flicker {
-  animation: crt-flicker 0.15s infinite;
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }

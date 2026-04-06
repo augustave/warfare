@@ -30,10 +30,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onEndOperation
 }) => {
   const handleFormation = (f: FormationType) => {
-      if (budgets && getFormationLockReason(f, trust, budgets)) return;
-      soundEngine.playTransform();
-      setFormation(f);
-      onAction?.();
+    if (budgets && getFormationLockReason(f, trust, budgets)) return;
+    soundEngine.playTransform();
+    setFormation(f);
+    onAction?.();
   };
 
   const handleSpawn = () => { soundEngine.playAlert(); spawnHostile(); onAction?.(); };
@@ -42,122 +42,119 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   const defaultBudgets = { latency: 100, bandwidth: 100, energy: 100, attention: 100 };
   const b = budgets || defaultBudgets;
-  const strikeLockReason = getFormationLockReason('strike', trust, b);
-  const shieldLockReason = getFormationLockReason('shield', trust, b);
-  const searchLockReason = getFormationLockReason('search', trust, b);
+  const strikeLock = getFormationLockReason('strike', trust, b);
+  const shieldLock = getFormationLockReason('shield', trust, b);
+  const searchLock = getFormationLockReason('search', trust, b);
 
   return (
-    <div className={clsx("flex flex-col gap-1 h-full bg-[#D4D0C8] text-black", className)}>
+    <div className={clsx("flex flex-col h-full bg-white text-black", className)}>
 
-      {/* Formation Group Box */}
-      <div className="win95-window p-0">
-        <div className="win95-titlebar text-[10px] py-[2px]">
-          <span>Doctrine Control</span>
-        </div>
-        <div className="p-2 space-y-1">
-          <Win95Radio
-            checked={currentFormation === 'idle'}
+      {/* Section: Doctrine */}
+      <div className="p-5 border-b-[3px] border-black">
+        <div className="node-label mb-3">Doctrine</div>
+        <div className="space-y-2">
+          <FormationRow
+            active={currentFormation === 'idle'}
             onClick={() => handleFormation('idle')}
-            label="01 Net_Idle"
-            shortcut="F1"
+            label="Net Idle"
+            code="01"
           />
-          <Win95Radio
-            checked={currentFormation === 'search'}
+          <FormationRow
+            active={currentFormation === 'search'}
             onClick={() => handleFormation('search')}
-            label="02 Sensing_Grid"
-            shortcut="F2"
-            locked={!!searchLockReason}
-            lockReason={searchLockReason || undefined}
+            label="Sensing Grid"
+            code="02"
+            locked={!!searchLock}
           />
-          <Win95Radio
-            checked={currentFormation === 'shield'}
+          <FormationRow
+            active={currentFormation === 'shield'}
             onClick={() => handleFormation('shield')}
-            label="03 A2AD_Wall"
-            shortcut="F3"
-            locked={!!shieldLockReason}
-            lockReason={shieldLockReason || undefined}
+            label="A2AD Wall"
+            code="03"
+            locked={!!shieldLock}
           />
-          <Win95Radio
-            checked={currentFormation === 'strike'}
+          <FormationRow
+            active={currentFormation === 'strike'}
             onClick={() => handleFormation('strike')}
-            label="04 Kill_Web"
-            shortcut="F4"
-            locked={!!strikeLockReason}
-            lockReason={strikeLockReason || undefined}
+            label="Kill Web"
+            code="04"
+            locked={!!strikeLock}
           />
         </div>
       </div>
 
-      {/* Injection Group Box */}
-      <div className="win95-window p-0">
-        <div className="win95-titlebar text-[10px] py-[2px]">
-          <span>Injection Parameters</span>
-        </div>
-        <div className="p-2 space-y-1">
-          <button onClick={handleSpawn} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
-            <span className="text-[#FF0000]">▶</span> Spawn Hostile
-            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
+      {/* Beam separator */}
+      <div className="beam-h" />
+
+      {/* Section: Inject */}
+      <div className="p-5 border-b-[3px] border-black">
+        <div className="node-label mb-3">Injection</div>
+        <div className="space-y-2">
+          <button onClick={handleSpawn} className="brut-btn w-full text-left text-[11px]">
+            + Spawn Hostile
+            {trust < 70 && <span className="inv-inline ml-2 text-[8px]">CONFIRM</span>}
           </button>
-          <button onClick={handleJamming} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
-            <span>▶</span> Comms Jamming
-            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
+          <button onClick={handleJamming} className="brut-btn w-full text-left text-[11px]">
+            ~ Comms Jamming
+            {trust < 70 && <span className="inv-inline ml-2 text-[8px]">CONFIRM</span>}
           </button>
-          <button onClick={handleFlash} className="win95-btn w-full text-[11px] flex items-center gap-2 normal-case">
-            <span className="text-[#FF0000]">▶</span> Flash War
-            {trust < 70 && <span className="ml-auto text-[9px] bg-[#FF0000] text-white px-1">!</span>}
+          <button onClick={handleFlash} className="brut-btn w-full text-left text-[11px]">
+            ! Flash War
+            {trust < 70 && <span className="inv-inline ml-2 text-[8px]">CONFIRM</span>}
           </button>
         </div>
       </div>
 
-      {/* Cost Reference */}
-      <div className="win95-groupbox text-[9px] font-mono leading-relaxed text-black/60">
-        <span className="win95-groupbox-label text-[9px]">Cost Table</span>
-        <div className="space-y-[2px]">
-          <div>IDLE.... LAT:0.02 BW:0.01 NRG:0.02</div>
-          <div>SEARCH.. LAT:0.08 BW:0.12 NRG:0.10</div>
-          <div>SHIELD.. LAT:0.06 BW:0.08 NRG:0.14</div>
-          <div className="text-[#FF0000]">STRIKE.. LAT:0.14 BW:0.16 NRG:0.20</div>
+      {/* Beam separator */}
+      <div className="beam-h" />
+
+      {/* Section: Cost Reference */}
+      <div className="p-5 flex-1">
+        <div className="node-label mb-2">Cost / Tick</div>
+        <div className="text-[9px] font-bold uppercase leading-[1.8] tracking-wide opacity-40">
+          <div>Idle — Low</div>
+          <div>Sensing — BW Heavy</div>
+          <div>A2AD — NRG Heavy</div>
+          <div>Kill Web — All Channels</div>
         </div>
       </div>
 
-      <div className="mt-auto pt-1">
-        <button
-          onClick={onEndOperation}
-          className="win95-btn w-full text-[11px] font-bold text-center normal-case"
-        >
-          End Operation ▪ Report
-        </button>
-      </div>
+      {/* End Operation */}
+      {onEndOperation && (
+        <div className="p-5 border-t-[3px] border-black">
+          <button onClick={onEndOperation} className="brut-btn brut-btn-active w-full text-center text-[11px]">
+            End Operation
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-interface Win95RadioProps {
-  checked: boolean;
+interface FormationRowProps {
+  active: boolean;
   onClick: () => void;
   label: string;
-  shortcut?: string;
+  code: string;
   locked?: boolean;
-  lockReason?: string;
 }
 
-const Win95Radio: React.FC<Win95RadioProps> = ({ checked, onClick, label, shortcut, locked, lockReason }) => (
+const FormationRow: React.FC<FormationRowProps> = ({ active, onClick, label, code, locked }) => (
   <button
     onClick={locked ? undefined : onClick}
     disabled={locked}
-    title={lockReason || ''}
     className={clsx(
-      "w-full text-[11px] flex items-center gap-2 py-[3px] px-1 cursor-default normal-case",
-      locked ? "opacity-40" : "hover:bg-[#000080] hover:text-white",
-      checked && "font-bold"
+      "w-full flex items-center gap-3 py-2 px-3 text-left transition-all duration-75 border-[3px]",
+      locked
+        ? "opacity-15 cursor-not-allowed border-black"
+        : active
+          ? "bg-black text-white border-black"
+          : "bg-white text-black border-black hover:bg-black hover:text-white"
     )}
   >
-    {/* Win95-style radio button */}
-    <span className="w-[12px] h-[12px] rounded-full border border-[#808080] border-r-white border-b-white bg-white flex items-center justify-center shrink-0">
-      {checked && <span className="w-[6px] h-[6px] rounded-full bg-black" />}
-    </span>
-    {locked && <span className="text-[9px]">🔒</span>}
-    <span>{label}</span>
-    {shortcut && <span className="ml-auto text-[9px] opacity-40">{shortcut}</span>}
+    <span className="text-[18px] font-black leading-none w-[28px]">{code}</span>
+    <div>
+      <span className="text-[11px] font-bold uppercase tracking-wide">{label}</span>
+    </div>
   </button>
 );

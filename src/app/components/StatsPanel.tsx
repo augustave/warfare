@@ -7,17 +7,24 @@ interface StatsPanelProps {
   className?: string;
 }
 
-const BudgetRow: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-  <div className="space-y-1">
-    <div className="flex justify-between items-baseline">
-      <span className="node-label">{label}</span>
-      <span className={clsx("data-large", value < 40 && "animate-blink")}>{Math.floor(value)}</span>
+const BudgetRow: React.FC<{ label: string; value: number }> = ({ label, value }) => {
+  const critical = value < 40;
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between items-baseline">
+        <span className="node-label">{label}</span>
+        {critical ? (
+          <span className="inv-inline" style={{ fontSize: '18px', padding: '2px 8px', letterSpacing: '-0.02em' }}>{Math.floor(value)}</span>
+        ) : (
+          <span className="data-large">{Math.floor(value)}</span>
+        )}
+      </div>
+      <div className="brut-bar">
+        <div className="brut-bar-fill" style={{ width: `${Math.max(value, 0)}%` }} />
+      </div>
     </div>
-    <div className="brut-bar">
-      <div className="brut-bar-fill" style={{ width: `${Math.max(value, 0)}%` }} />
-    </div>
-  </div>
-);
+  );
+};
 
 export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
   const trustPhase =
@@ -62,12 +69,13 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
         </div>
         <div className="flex-1">
           <div className="node-label mb-1">Network</div>
-          <div className={clsx(
-            "data-large",
-            stats.networkStatus === 'jammed' && "animate-blink"
-          )}>
-            {stats.networkStatus === 'nominal' ? 'MESH' : stats.networkStatus === 'jammed' ? 'OFF' : 'EDGE'}
-          </div>
+          {stats.networkStatus === 'jammed' ? (
+            <span className="inv-inline" style={{ fontSize: '18px', padding: '2px 8px', letterSpacing: '-0.02em' }}>OFF</span>
+          ) : (
+            <div className="data-large">
+              {stats.networkStatus === 'nominal' ? 'MESH' : 'EDGE'}
+            </div>
+          )}
         </div>
       </div>
 
@@ -87,12 +95,13 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, className }) => {
       {/* Threat */}
       <div className="p-5">
         <div className="node-label mb-1">Threat</div>
-        <div className={clsx(
-          "data-large",
-          (stats.threatLevel === 'critical' || stats.threatLevel === 'elevated') && "animate-blink"
-        )}>
-          {stats.threatLevel.toUpperCase()}
-        </div>
+        {(stats.threatLevel === 'critical' || stats.threatLevel === 'elevated') ? (
+          <span className="inv-inline" style={{ fontSize: '18px', padding: '2px 8px', letterSpacing: '-0.02em' }}>
+            {stats.threatLevel.toUpperCase()}
+          </span>
+        ) : (
+          <div className="data-large">{stats.threatLevel.toUpperCase()}</div>
+        )}
       </div>
     </div>
   );

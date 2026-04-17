@@ -300,6 +300,8 @@
 
 /* ═══════════════════════════════════════════════════
    ANIMATION
+   Blink reserved for: hostile presence/lock, trust REVOKED.
+   Other critical states → .inv-inline
    ═══════════════════════════════════════════════════ */
 
 @keyframes blink {

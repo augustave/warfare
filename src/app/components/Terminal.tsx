@@ -15,10 +15,12 @@ export const Terminal: React.FC<TerminalProps> = ({ logs }) => {
             key={log.id}
             className={clsx(
               "text-[10px] font-bold uppercase tracking-wide leading-[1.8]",
-              log.type === 'alert' && "animate-blink",
               !log.type && "opacity-50"
             )}
           >
+            {log.type === 'alert' && (
+              <span className="bg-white text-black px-1 mr-2">ALERT</span>
+            )}
             <span className="opacity-30 mr-2">{log.timestamp}</span>
             {log.message}
           </div>

@@ -26,6 +26,14 @@ const COMPASS = [
   { deg: 270, label: 'W' }, { deg: 315, label: 'NW' },
 ];
 
+// Disclosure grammar: Platform and Risk nodes are always labeled.
+// Selection reveals 1-hop graph neighbors. Hover reveals singles.
+const ALWAYS_LABELED = new Set(
+  Object.values(KNOWLEDGE_BASE)
+    .filter(n => n.type === 'Platform' || n.type === 'Risk')
+    .map(n => n.id)
+);
+
 // Unified HUD typography — single 9px bold weight for all canvas-rendered labels.
 // LG reserved for data-block headers (callsigns, TGT-XXX).
 const HUD_FONT = 'bold 9px Helvetica, Arial, sans-serif';
@@ -688,16 +696,13 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
             (r.target === selectedNode.id && r.source === nodeId)
           ));
 
-          // Always show callsign for selected/related. For others, show only ID (subtle)
+          // Semantic disclosure: selected/related get full callsign; Platform/Risk nodes always labeled; everything else is pure geometry.
           if (isSelected || isRelated) {
             drawAgentCallsign(netCtx, agent, nodeId, isSelected, isRelated);
-          } else {
-            // Show subtle ID for every 4th agent to add data density without clutter
-            if (i % 4 === 0) {
-              netCtx.font = '7px Helvetica, Arial, sans-serif';
-              netCtx.fillStyle = 'rgba(0,0,0,0.12)';
-              netCtx.fillText(nodeId, agent.x + CELL / 2 + 2, agent.y);
-            }
+          } else if (ALWAYS_LABELED.has(nodeId)) {
+            netCtx.font = HUD_FONT;
+            netCtx.fillStyle = 'rgba(0,0,0,0.4)';
+            netCtx.fillText(CALLSIGNS[nodeId] || nodeId, agent.x + CELL / 2 + 3, agent.y + 3);
           }
         });
 

@@ -26,9 +26,10 @@ const COMPASS = [
   { deg: 270, label: 'W' }, { deg: 315, label: 'NW' },
 ];
 
+// Unified HUD typography — single 9px bold weight for all canvas-rendered labels.
+// LG reserved for data-block headers (callsigns, TGT-XXX).
 const HUD_FONT = 'bold 9px Helvetica, Arial, sans-serif';
-const HUD_FONT_SM = 'bold 8px Helvetica, Arial, sans-serif';
-const HUD_FONT_LG = 'bold 11px Helvetica, Arial, sans-serif';
+const HUD_FONT_LG = 'bold 10px Helvetica, Arial, sans-serif';
 
 export interface MainStageHandle {
   spawnHostile: () => void;
@@ -198,8 +199,8 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     ctx.strokeStyle = 'rgba(0,0,0,0.06)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 6]);
-    ctx.font = HUD_FONT_SM;
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.font = HUD_FONT;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
     for (let r = 100; r < maxR; r += 100) {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -208,7 +209,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     }
     ctx.setLineDash([]);
     // Center crosshair
-    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.beginPath();
     ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy);
     ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy + 12);
@@ -216,12 +217,12 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   };
 
   const drawCompass = (ctx: CanvasRenderingContext2D, w: number, h: number, cx: number, cy: number) => {
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.lineWidth = 1;
-    ctx.font = 'bold 10px Helvetica, Arial, sans-serif';
+    ctx.font = HUD_FONT;
     const pad = 14;
-    const tickLen = 8;
+    const tickLen = 6;
 
     for (const { deg, label } of COMPASS) {
       const rad = (deg - 90) * Math.PI / 180; // 0° = top
@@ -250,10 +251,10 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   };
 
   const drawGridCoords = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
     ctx.lineWidth = 1;
-    ctx.font = '7px Helvetica, Arial, sans-serif';
+    ctx.font = HUD_FONT;
 
     // Vertical grid lines + labels along top
     for (let x = 100; x < w; x += 100) {
@@ -272,7 +273,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   };
 
   const drawVelocityVectors = (ctx: CanvasRenderingContext2D) => {
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.lineWidth = 1;
     agentsRef.current.forEach(a => {
       const dx = a.targetX - a.x;
@@ -363,7 +364,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     if (currentFormation === 'strike') {
       const pct = Math.floor(lockProgress * 100);
       ctx.fillStyle = lockProgress >= 1 ? '#000' : 'rgba(0,0,0,0.6)';
-      ctx.font = 'bold 10px Helvetica, Arial, sans-serif';
+      ctx.font = HUD_FONT;
       ctx.fillText(`LCK ${pct}%`, blockX + 2, blockY + 38);
       // Lock bar
       ctx.fillStyle = 'rgba(0,0,0,0.15)';
@@ -416,7 +417,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     const angle = Math.atan2(dy, dx);
     const maxR = Math.max(w, h) * 0.45;
 
-    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 6]);
     ctx.beginPath();
@@ -426,19 +427,19 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
 
     // Threat direction label
     const labelR = maxR + 12;
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.font = HUD_FONT_SM;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.font = HUD_FONT;
     ctx.fillText('THREAT', cx + Math.cos(angle) * labelR - 16, cy + Math.sin(angle) * labelR);
   };
 
   // Draw agent callsign on canvas near agent (for visible agents only)
   const drawAgentCallsign = (ctx: CanvasRenderingContext2D, agent: Agent, nodeId: string, isSelected: boolean, isRelated: boolean) => {
     const callsign = CALLSIGNS[nodeId] || nodeId;
-    ctx.font = isSelected ? 'bold 8px Helvetica, Arial, sans-serif' : '7px Helvetica, Arial, sans-serif';
-    ctx.fillStyle = isSelected ? 'rgba(0,0,0,0.7)' : isRelated ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)';
+    ctx.font = HUD_FONT;
+    ctx.fillStyle = isSelected ? 'rgba(0,0,0,0.85)' : isRelated ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.35)';
     ctx.fillText(`${nodeId}`, agent.x + CELL / 2 + 3, agent.y - 1);
     if (isSelected || isRelated) {
-      ctx.fillText(callsign, agent.x + CELL / 2 + 3, agent.y + 8);
+      ctx.fillText(callsign, agent.x + CELL / 2 + 3, agent.y + 9);
     }
   };
 
@@ -654,7 +655,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                   netCtx.stroke();
                   if (isSel || (dSq < 100 * 100 && Math.random() > 0.98)) {
                     netCtx.fillStyle = isSel ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.2)';
-                    netCtx.font = isSel ? 'bold 9px Helvetica, Arial, sans-serif' : '7px Helvetica, Arial, sans-serif';
+                    netCtx.font = HUD_FONT;
                     netCtx.fillText(edge.label.toUpperCase(), (sa.x + ta.x) / 2 + j.x, (sa.y + ta.y) / 2 + j.y);
                   }
                 }

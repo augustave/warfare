@@ -306,6 +306,8 @@ export default function App() {
         <span>ATN {Math.floor(stats.budgets.attention)}%</span>
         <span className="hidden md:inline">NET {stats.networkStatus === 'nominal' ? 'MESH' : stats.networkStatus === 'jammed' ? 'OFFLINE' : 'EDGE'}</span>
         <span className="hidden md:inline">COV {stats.coverage}%</span>
+        <span className="hidden lg:inline opacity-40 text-[9px]">R=RNG · BRG=BEARING · TGT=HOSTILE</span>
+        <span className="hidden lg:inline opacity-40 text-[9px]">⌘D KERNEL</span>
       </div>
 
       {/* ═══ DIALOGS ═══ */}

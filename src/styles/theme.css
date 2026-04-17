@@ -2,6 +2,9 @@
    BRUTALIST FLOW THEME
    Pure black-and-white diagrammatic typography.
    Inspired by Maciunas Fluxus charts.
+
+   Border scale: 2px (bars) / 3px (overlays) / 6px (beams) / 20px (heavy beams)
+   Canvas HUD text: 9px bold (see MainStage HUD_FONT)
    ═══════════════════════════════════════════════════ */
 
 :root {
@@ -311,6 +314,12 @@
 
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blink {
+    animation: none;
+  }
 }
 
 @keyframes ticker {

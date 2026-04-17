@@ -321,9 +321,10 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     ];
     tr.forEach((line, i) => ctx.fillText(line, w - 12, 22 + i * 13));
 
-    // Bottom-right: Mouse pos + elapsed
+    // Bottom-right: Selection context + elapsed
+    const selLine = selectedNode ? `SEL: ${selectedNode.id}` : `AGT: ${AGENT_COUNT}`;
     const br = [
-      `POS: ${Math.floor(mousePos.current.x)},${Math.floor(mousePos.current.y)}`,
+      selLine,
       `T+${elapsed}S`,
     ];
     br.forEach((line, i) => ctx.fillText(line, w - 12, h - 20 + i * 13));
@@ -747,7 +748,12 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   }, [onStatsUpdate, onLog, renderHostiles]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-white overflow-hidden cursor-crosshair">
+    <div
+      ref={containerRef}
+      role="img"
+      aria-label={`Tactical canvas. Formation ${formation}. ${AGENT_COUNT} agents. Trust ${Math.floor(trust)} percent, ${trustPhase} phase. ${renderHostiles.length > 0 ? 'Hostile detected.' : 'No threats.'}`}
+      className="relative w-full h-full bg-white overflow-hidden cursor-crosshair"
+    >
       <ScanlineOverlay trustPhase={trustPhase} />
       <canvas ref={sensorCanvasRef} className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none" />
       <canvas ref={netCanvasRef} className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none" />

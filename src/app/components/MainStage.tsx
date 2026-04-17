@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { Budgets, KnowledgeNode, FormationType, SimulationStats } from '../types';
 import { QuadTree, Rectangle } from '../utils/QuadTree';
 import { KNOWLEDGE_BASE, GRAPH_RELATIONSHIPS } from '../data';
@@ -7,10 +7,28 @@ import { ScanlineOverlay } from './ScanlineOverlay';
 import { getSmoothedVec2 } from '../utils/noise';
 
 const AGENT_COUNT = 64;
-const CELL = 12;          // agent square size
+const CELL = 12;
 const GAP = 3;
 const CONNECTION_DIST = 120;
-const BEAM_WIDTH = 3;     // network link weight (brutalist thick lines)
+const BEAM_WIDTH = 3;
+
+// Callsign abbreviation table
+const CALLSIGNS: Record<string, string> = {
+  '01': 'AGNT', '02': 'ATTR', '03': 'REPL', '04': 'HIVE',
+  '05': 'LTCE', '06': 'FLSH', '07': 'GSHK', '08': 'DCSN',
+  '09': 'INTL', '10': 'D3K9', '11': 'SRNC', '12': 'MSAL',
+  '13': 'VNVR', '14': 'MACH', '15': 'CSUA', '16': 'SENS',
+};
+
+const COMPASS = [
+  { deg: 0, label: 'N' }, { deg: 45, label: 'NE' }, { deg: 90, label: 'E' },
+  { deg: 135, label: 'SE' }, { deg: 180, label: 'S' }, { deg: 225, label: 'SW' },
+  { deg: 270, label: 'W' }, { deg: 315, label: 'NW' },
+];
+
+const HUD_FONT = 'bold 9px Helvetica, Arial, sans-serif';
+const HUD_FONT_SM = 'bold 8px Helvetica, Arial, sans-serif';
+const HUD_FONT_LG = 'bold 11px Helvetica, Arial, sans-serif';
 
 export interface MainStageHandle {
   spawnHostile: () => void;
@@ -62,6 +80,9 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   const networkStatusRef = useRef<'nominal' | 'jammed' | 'local'>('nominal');
   const animationFrameRef = useRef<number>(0);
   const lastFormationRef = useRef<FormationType>(formation);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const startTimeRef = useRef(Date.now());
+  const coverageRef = useRef(0);
 
   const nodeToAgentsMap = useRef<Map<string, number[]>>(new Map());
   if (nodeToAgentsMap.current.size === 0) {
@@ -99,8 +120,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
       const { width, height } = containerRef.current.getBoundingClientRect();
       const startX = Math.random() > 0.5 ? 20 : width - 20;
       const startY = Math.random() * height;
-      const newHostile: Hostile = { id: Date.now(), x: startX, y: startY, targetX: width / 2, targetY: height / 2 };
-      hostilesRef.current.push(newHostile);
+      hostilesRef.current.push({ id: Date.now(), x: startX, y: startY, targetX: width / 2, targetY: height / 2 });
       onLog("ALERT: UNIDENTIFIED SIGNATURE DETECTED.", "alert");
       onStatsUpdate({ threatLevel: 'elevated' });
     },
@@ -108,10 +128,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
       onLog("WARNING: RF SPECTRUM JAMMING DETECTED.", "alert");
       networkStatusRef.current = 'jammed';
       onStatsUpdate({ networkStatus: 'jammed' });
-      agentsRef.current.forEach(a => {
-        a.targetX += (Math.random() - 0.5) * 300;
-        a.targetY += (Math.random() - 0.5) * 300;
-      });
+      agentsRef.current.forEach(a => { a.targetX += (Math.random() - 0.5) * 300; a.targetY += (Math.random() - 0.5) * 300; });
       setTimeout(() => { onLog("Edge Compute... Local mesh."); networkStatusRef.current = 'local'; onStatsUpdate({ networkStatus: 'local' }); }, 2500);
       setTimeout(() => { networkStatusRef.current = 'nominal'; onStatsUpdate({ networkStatus: 'nominal' }); onLog("Spectrum clear."); }, 8000);
     },
@@ -134,10 +151,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
         }, 200);
       }
       const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 800, height: 600 };
-      const newHostile: Hostile = {
-        id: Date.now(), x: Math.random() > 0.5 ? 20 : width - 20,
-        y: Math.random() * height, targetX: width / 2, targetY: height / 2
-      };
+      const newHostile: Hostile = { id: Date.now(), x: Math.random() > 0.5 ? 20 : width - 20, y: Math.random() * height, targetX: width / 2, targetY: height / 2 };
       hostilesRef.current.push(newHostile);
       setRenderHostiles([newHostile]);
     }
@@ -154,6 +168,10 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
   };
 
   const handleMouseMove = (e: MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      mousePos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
     if (draggingRef.current) {
       const agent = agentsRef.current.find(a => a.id === draggingRef.current?.id);
       if (agent && containerRef.current) {
@@ -171,6 +189,258 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
     window.addEventListener('mouseup', handleMouseUp);
     return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleMouseUp); };
   }, []);
+
+  // ═══════════════════════════════════════════
+  // HUD DRAWING FUNCTIONS
+  // ═══════════════════════════════════════════
+
+  const drawRangeRings = (ctx: CanvasRenderingContext2D, cx: number, cy: number, maxR: number) => {
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+    ctx.font = HUD_FONT_SM;
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    for (let r = 100; r < maxR; r += 100) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillText(`R${r}`, cx + r - 20, cy - 4);
+    }
+    ctx.setLineDash([]);
+    // Center crosshair
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy);
+    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy + 12);
+    ctx.stroke();
+  };
+
+  const drawCompass = (ctx: CanvasRenderingContext2D, w: number, h: number, cx: number, cy: number) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
+    ctx.font = 'bold 10px Helvetica, Arial, sans-serif';
+    const pad = 14;
+    const tickLen = 8;
+
+    for (const { deg, label } of COMPASS) {
+      const rad = (deg - 90) * Math.PI / 180; // 0° = top
+      // Tick on edge
+      const edgeX = cx + Math.cos(rad) * Math.max(cx, cy);
+      const edgeY = cy + Math.sin(rad) * Math.max(cx, cy);
+      // Clamp to viewport edges
+      let tx = Math.max(pad, Math.min(w - pad, edgeX));
+      let ty = Math.max(pad, Math.min(h - pad, edgeY));
+
+      // Draw tick mark
+      const inX = Math.cos(rad + Math.PI) * tickLen;
+      const inY = Math.sin(rad + Math.PI) * tickLen;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + inX, ty + inY);
+      ctx.stroke();
+
+      // Label
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${deg}°${label}`, tx + inX * 2.5, ty + inY * 2.5);
+    }
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  };
+
+  const drawGridCoords = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+    ctx.lineWidth = 1;
+    ctx.font = '7px Helvetica, Arial, sans-serif';
+
+    // Vertical grid lines + labels along top
+    for (let x = 100; x < w; x += 100) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0); ctx.lineTo(x, h);
+      ctx.stroke();
+      ctx.fillText(String(x / 100), x + 2, 10);
+    }
+    // Horizontal grid lines + labels along left
+    for (let y = 100; y < h; y += 100) {
+      ctx.beginPath();
+      ctx.moveTo(0, y); ctx.lineTo(w, y);
+      ctx.stroke();
+      ctx.fillText(String(y / 100), 3, y - 2);
+    }
+  };
+
+  const drawVelocityVectors = (ctx: CanvasRenderingContext2D) => {
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    agentsRef.current.forEach(a => {
+      const dx = a.targetX - a.x;
+      const dy = a.targetY - a.y;
+      const mag = Math.sqrt(dx * dx + dy * dy);
+      if (mag > 5) { // Only show when moving
+        const nx = dx / mag;
+        const ny = dy / mag;
+        const vLen = Math.min(mag * 0.3, 20); // Scale with speed, cap at 20px
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(a.x + nx * vLen, a.y + ny * vLen);
+        ctx.stroke();
+      }
+    });
+  };
+
+  const drawCornerHUD = (ctx: CanvasRenderingContext2D, w: number, h: number, currentFormation: string) => {
+    const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    ctx.font = HUD_FONT;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+
+    // Top-left: Formation + Agent count
+    const tl = [
+      `FRM: ${currentFormation.toUpperCase()}`,
+      `AGT: ${AGENT_COUNT}`,
+      `NET: ${networkStatusRef.current.toUpperCase()}`,
+    ];
+    tl.forEach((line, i) => ctx.fillText(line, 12, 22 + i * 13));
+
+    // Top-right: Coverage + Trust
+    ctx.textAlign = 'right';
+    const tr = [
+      `COV: ${coverageRef.current}%`,
+      `TRS: ${Math.floor(trust)}%`,
+      `THR: ${hostilesRef.current.length > 0 ? 'ELEVATED' : 'LOW'}`,
+    ];
+    tr.forEach((line, i) => ctx.fillText(line, w - 12, 22 + i * 13));
+
+    // Bottom-right: Mouse pos + elapsed
+    const br = [
+      `POS: ${Math.floor(mousePos.current.x)},${Math.floor(mousePos.current.y)}`,
+      `T+${elapsed}S`,
+    ];
+    br.forEach((line, i) => ctx.fillText(line, w - 12, h - 20 + i * 13));
+    ctx.textAlign = 'left';
+
+    // Bottom-left: Large formation watermark (already in original, enhanced)
+    ctx.fillStyle = 'rgba(0,0,0,0.04)';
+    ctx.font = 'bold 72px Helvetica, Arial, sans-serif';
+    ctx.fillText(currentFormation.toUpperCase(), 12, h - 10);
+  };
+
+  const drawHostileDataBlock = (ctx: CanvasRenderingContext2D, h: Hostile, cx: number, cy: number, currentFormation: string) => {
+    const dx = h.x - cx;
+    const dy = h.y - cy;
+    const range = Math.floor(Math.sqrt(dx * dx + dy * dy));
+    const bearing = Math.floor(((Math.atan2(dx, -dy) * 180 / Math.PI) + 360) % 360);
+    const lockProgress = currentFormation === 'strike' ? Math.min(lockOnTimerRef.current / 180, 1) : 0;
+
+    // Position data block offset from hostile
+    const blockX = h.x + 20;
+    const blockY = h.y - 40;
+
+    // Leader line
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(h.x + CELL / 2, h.y - CELL / 2);
+    ctx.lineTo(blockX, blockY + 12);
+    ctx.stroke();
+
+    // Data block background
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillRect(blockX - 2, blockY - 10, 80, currentFormation === 'strike' ? 52 : 40);
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(blockX - 2, blockY - 10, 80, currentFormation === 'strike' ? 52 : 40);
+
+    // Data text
+    ctx.fillStyle = '#000';
+    ctx.font = HUD_FONT_LG;
+    ctx.fillText('TGT-001', blockX + 2, blockY + 2);
+    ctx.font = HUD_FONT;
+    ctx.fillText(`BRG ${String(bearing).padStart(3, '0')}°`, blockX + 2, blockY + 14);
+    ctx.fillText(`RNG ${range}`, blockX + 2, blockY + 26);
+
+    if (currentFormation === 'strike') {
+      const pct = Math.floor(lockProgress * 100);
+      ctx.fillStyle = lockProgress >= 1 ? '#000' : 'rgba(0,0,0,0.6)';
+      ctx.font = 'bold 10px Helvetica, Arial, sans-serif';
+      ctx.fillText(`LCK ${pct}%`, blockX + 2, blockY + 38);
+      // Lock bar
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(blockX + 44, blockY + 30, 30, 8);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(blockX + 44, blockY + 30, 30 * lockProgress, 8);
+    }
+  };
+
+  const drawSelectedAgentBlock = (ctx: CanvasRenderingContext2D, agent: Agent, nodeId: string) => {
+    const node = KNOWLEDGE_BASE.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const callsign = CALLSIGNS[nodeId] || nodeId;
+    const relCount = GRAPH_RELATIONSHIPS.filter(r => r.source === nodeId || r.target === nodeId).length;
+
+    // Block position: offset to right
+    const blockX = agent.x + 22;
+    const blockY = agent.y - 8;
+
+    // Leader line
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(agent.x + CELL / 2, agent.y);
+    ctx.lineTo(blockX, blockY + 6);
+    ctx.stroke();
+
+    // Data block
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(blockX - 2, blockY - 8, 120, 44);
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(blockX - 2, blockY - 8, 120, 44);
+
+    ctx.fillStyle = '#000';
+    ctx.font = HUD_FONT_LG;
+    ctx.fillText(`${nodeId} ${callsign}`, blockX + 2, blockY + 4);
+    ctx.font = HUD_FONT;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillText(node.title.toUpperCase().slice(0, 18), blockX + 2, blockY + 16);
+    ctx.fillText(`TYPE: ${node.type.toUpperCase()}`, blockX + 2, blockY + 28);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillText(`REL: ${relCount}`, blockX + 82, blockY + 28);
+  };
+
+  const drawThreatArc = (ctx: CanvasRenderingContext2D, hostile: Hostile, cx: number, cy: number, w: number, h: number) => {
+    const dx = hostile.x - cx;
+    const dy = hostile.y - cy;
+    const angle = Math.atan2(dy, dx);
+    const maxR = Math.max(w, h) * 0.45;
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, maxR, angle - 0.4, angle + 0.4);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Threat direction label
+    const labelR = maxR + 12;
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.font = HUD_FONT_SM;
+    ctx.fillText('THREAT', cx + Math.cos(angle) * labelR - 16, cy + Math.sin(angle) * labelR);
+  };
+
+  // Draw agent callsign on canvas near agent (for visible agents only)
+  const drawAgentCallsign = (ctx: CanvasRenderingContext2D, agent: Agent, nodeId: string, isSelected: boolean, isRelated: boolean) => {
+    const callsign = CALLSIGNS[nodeId] || nodeId;
+    ctx.font = isSelected ? 'bold 8px Helvetica, Arial, sans-serif' : '7px Helvetica, Arial, sans-serif';
+    ctx.fillStyle = isSelected ? 'rgba(0,0,0,0.7)' : isRelated ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)';
+    ctx.fillText(`${nodeId}`, agent.x + CELL / 2 + 3, agent.y - 1);
+    if (isSelected || isRelated) {
+      ctx.fillText(callsign, agent.x + CELL / 2 + 3, agent.y + 8);
+    }
+  };
 
   // Main Game Loop
   useEffect(() => {
@@ -284,10 +554,8 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
             if (netCtx) {
               const progress = Math.min(lockOnTimerRef.current / 180, 1);
               const sz = 50 * (1 - progress) + 10;
-              netCtx.strokeStyle = '#000';
-              netCtx.lineWidth = 4;
+              netCtx.strokeStyle = '#000'; netCtx.lineWidth = 4;
               netCtx.strokeRect(h.x - sz, h.y - sz, sz * 2, sz * 2);
-              // Crosshair
               netCtx.beginPath();
               netCtx.moveTo(h.x - sz - 8, h.y); netCtx.lineTo(h.x + sz + 8, h.y);
               netCtx.moveTo(h.x, h.y - sz - 8); netCtx.lineTo(h.x, h.y + sz + 8);
@@ -306,10 +574,24 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
       });
       if (hostilesRef.current.length !== renderHostiles.length) setRenderHostiles([...hostilesRef.current]);
 
-      // 3. Network — heavy black beams
+      // 3. Network Canvas — HUD + connections + data
       if (netCtx) {
         netCtx.clearRect(0, 0, width, height);
 
+        // ── HUD LAYER: Grid, Range Rings, Compass ──
+        drawGridCoords(netCtx, width, height);
+        drawRangeRings(netCtx, cx, cy, Math.max(width, height) * 0.5);
+        drawCompass(netCtx, width, height, cx, cy);
+        drawVelocityVectors(netCtx);
+        drawCornerHUD(netCtx, width, height, currentFormation);
+
+        // ── THREAT LAYER ──
+        if (activeHostile) {
+          drawThreatArc(netCtx, activeHostile, cx, cy, width, height);
+          drawHostileDataBlock(netCtx, activeHostile, cx, cy, currentFormation);
+        }
+
+        // ── NETWORK LAYER ──
         if (networkStatusRef.current !== 'jammed') {
           const alpha = networkStatusRef.current === 'local' ? 0.6 : 0.25;
           netCtx.strokeStyle = `rgba(0,0,0,${alpha * linkOpacity})`;
@@ -340,8 +622,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
 
           // Strike lines
           if (activeHostile && currentFormation === 'strike') {
-            netCtx.strokeStyle = 'rgba(0,0,0,0.15)';
-            netCtx.lineWidth = 1;
+            netCtx.strokeStyle = 'rgba(0,0,0,0.15)'; netCtx.lineWidth = 1;
             netCtx.beginPath();
             agentsRef.current.forEach(a => { netCtx.moveTo(a.x, a.y); netCtx.lineTo(activeHostile.x, activeHostile.y); });
             netCtx.stroke();
@@ -363,22 +644,14 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
                   netCtx.beginPath();
                   const sid = 50000 + sa.id * 100 + ta.id;
                   const j = getSmoothedVec2(sid, totalJitter, 0.15);
-
                   if (isSel) {
-                    netCtx.strokeStyle = 'rgba(0,0,0,0.7)';
-                    netCtx.lineWidth = 4;
-                    netCtx.setLineDash([6, 4]);
+                    netCtx.strokeStyle = 'rgba(0,0,0,0.7)'; netCtx.lineWidth = 4; netCtx.setLineDash([6, 4]);
                     if (Math.random() > 0.92) packetsRef.current.push({ x: sa.x, y: sa.y, tx: ta.x, ty: ta.y, age: 0, maxAge: 30 + Math.random() * 20 });
                   } else {
-                    netCtx.strokeStyle = 'rgba(0,0,0,0.08)';
-                    netCtx.lineWidth = 2;
-                    netCtx.setLineDash([2, 4]);
+                    netCtx.strokeStyle = 'rgba(0,0,0,0.08)'; netCtx.lineWidth = 2; netCtx.setLineDash([2, 4]);
                   }
-                  netCtx.moveTo(sa.x + j.x, sa.y + j.y);
-                  netCtx.lineTo(ta.x + j.x, ta.y + j.y);
+                  netCtx.moveTo(sa.x + j.x, sa.y + j.y); netCtx.lineTo(ta.x + j.x, ta.y + j.y);
                   netCtx.stroke();
-
-                  // Labels
                   if (isSel || (dSq < 100 * 100 && Math.random() > 0.98)) {
                     netCtx.fillStyle = isSel ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.2)';
                     netCtx.font = isSel ? 'bold 9px Helvetica, Arial, sans-serif' : '7px Helvetica, Arial, sans-serif';
@@ -390,7 +663,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
             netCtx.setLineDash([]);
           });
 
-          // Packets — black squares
+          // Packets
           packetsRef.current = packetsRef.current.filter(p => {
             p.age++;
             if (p.age > p.maxAge) return false;
@@ -403,10 +676,40 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
           });
         }
 
-        // Formation label on canvas
-        netCtx.fillStyle = 'rgba(0,0,0,0.06)';
-        netCtx.font = 'bold 80px Helvetica, Arial, sans-serif';
-        netCtx.fillText(currentFormation.toUpperCase(), 30, height - 30);
+        // ── AGENT CALLSIGN LAYER ──
+        const nodeCount = Object.keys(KNOWLEDGE_BASE).length;
+        agentsRef.current.forEach((agent, i) => {
+          const nodeId = KNOWLEDGE_BASE[i % nodeCount]?.id;
+          if (!nodeId) return;
+          const isSelected = !!(selectedNode && nodeId === selectedNode.id);
+          const isRelated = !!(selectedNode && GRAPH_RELATIONSHIPS.some(r =>
+            (r.source === selectedNode.id && r.target === nodeId) ||
+            (r.target === selectedNode.id && r.source === nodeId)
+          ));
+
+          // Always show callsign for selected/related. For others, show only ID (subtle)
+          if (isSelected || isRelated) {
+            drawAgentCallsign(netCtx, agent, nodeId, isSelected, isRelated);
+          } else {
+            // Show subtle ID for every 4th agent to add data density without clutter
+            if (i % 4 === 0) {
+              netCtx.font = '7px Helvetica, Arial, sans-serif';
+              netCtx.fillStyle = 'rgba(0,0,0,0.12)';
+              netCtx.fillText(nodeId, agent.x + CELL / 2 + 2, agent.y);
+            }
+          }
+        });
+
+        // ── SELECTED AGENT DATA BLOCK ──
+        if (selectedNode) {
+          const selIndices = nodeToAgentsMap.current.get(selectedNode.id) || [];
+          if (selIndices.length > 0) {
+            const primaryAgent = agentsRef.current[selIndices[0]];
+            if (primaryAgent) {
+              drawSelectedAgentBlock(netCtx, primaryAgent, selectedNode.id);
+            }
+          }
+        }
       }
 
       // 4. Sensors
@@ -425,7 +728,8 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
           sensorCtx.fillRect(Math.round(point.x) - sz / 2, Math.round(point.y) - sz / 2, sz, sz);
         });
         if (animationFrameRef.current % 60 === 0) {
-          onStatsUpdate({ coverage: Math.floor((revealedCount / sensorGridRef.current.length) * 100) });
+          coverageRef.current = Math.floor((revealedCount / sensorGridRef.current.length) * 100);
+          onStatsUpdate({ coverage: coverageRef.current });
         }
       }
 
@@ -468,7 +772,7 @@ export const MainStage = forwardRef<MainStageHandle, MainStageProps>(({
         );
       })}
 
-      {/* Hostiles — inverted (white on black outline) */}
+      {/* Hostiles */}
       {renderHostiles.map((h) => (
         <div
           key={h.id}
